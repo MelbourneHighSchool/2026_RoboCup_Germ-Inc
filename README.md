@@ -29,7 +29,11 @@ Per robot:
 - Raspberry Pi HQ Camera
 - Adafruit BNO085 IMU
 - Custom PCB
-  - 12 IR sensors (TSSP4038), 32 light sensors for line detection
+  - 12x TSSP4038 IR Sensors
+  - 1x STM32H503RBT6 Microcontroller
+  - 32x KT-0603W LEDs
+  - 32x ALS-PT19-315C/L177/TR8 LDRs
+  - 2x CD74HC4067SM96 Analogue converters
 - On-off switch (GPIO 25)
 
 # SETUP & INSTALLATION
