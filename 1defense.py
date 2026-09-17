@@ -824,7 +824,7 @@ def main():
                 motors.motorspeed5 = 0
 
             elif botstate == 1: #go for ball then score
-                if (ball_distance < 120 and ballpos[1] > 0 and abs(ballpos[0]) < 40 and ir_snapshot[0].get("distance") > 2) or ir_snapshot[0].get("distance") == 4 or (ballpos[1] < 160 and substate1 == 1):
+                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
                     raw_substate1 = 1  #ball in bcz
                 elif (ballpos[1] < 60 and (substate1 == 1 or substate1 == 4)) or ballpos[1] < 80:
                     raw_substate1 = 2 if ball_distance > 200 else 3
