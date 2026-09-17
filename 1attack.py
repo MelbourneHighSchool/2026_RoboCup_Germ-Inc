@@ -699,6 +699,7 @@ def main():
         pcb.set_brightness(led_brightness)
 
         heading_offset = imu.heading #calibrate heading
+        has_ball_time = time.time()
         time.sleep(0.01)
 
     print("running")
@@ -786,6 +787,7 @@ def main():
                 pcb.set_brightness(led_brightness)
 
                 heading_offset = imu.heading
+                has_ball_time = time.time()
 
                 time.sleep(0.02)
                 continue
@@ -866,7 +868,7 @@ def main():
 #----------------------------------------------------------------------
             if ballpos == [0,0] and ir == [0,0]: #doesnt see ball
                 raw_botstate = 0 if goalie_bot_state == 1 else 3
-            elif (ball_distance < 120 and ballpos[1] > 0 and abs(ballpos[0]) < 40 and ir_snapshot[0].get("distance") > 2) or ir_snapshot[0].get("distance") == 4 or (ballpos[1] < 160 and botstate == 1): # ball in ball capture zone
+            elif ir_snapshot[0].get("distance") == 3 or (botstate == 1 and ((ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3) or (ir_snapshot[3].get("detected") == 0 or ir_snapshot[9].get("detected") == 0))): # ball in ball capture zone
                 raw_botstate = 1 #try to shoot
             else:
                 raw_botstate = 2 #try to get possession of ball
@@ -878,6 +880,7 @@ def main():
 #----------------------------------------------------------------------
             if botstate == 0: # do not see ball
                 comms.my_state.update({"command": 1})
+                has_ball_time = time.time()
                 desired_heading = 0
                 desired_pos = [goalpos[0], goalpos[1] - 180] # go midfield
                 motors.motorspeed5 = 0
@@ -886,15 +889,16 @@ def main():
                 comms.my_state.update({"command": 0})
                 desired_heading = math.atan2(goalpos[1],goalpos[0]) - math.pi/2
                 desired_heading = (desired_heading + math.pi) % (2 * math.pi) - math.pi
-                desired_pos = goalpos
+                desired_pos = goalpos if has_ball_time - time.time() > 0.2 else ballpos
 
                 aim_error = (desired_heading - compass + math.pi) % (2*math.pi) - math.pi
-                if not flick_sequence_left.active and not flick_sequence_right.active and abs(aim_error) < 0.02 and abs(math.hypot(goalpos[0],goalpos[1])) > 100:  #TUNE: 0.02rad angle, 100 distance far
+                if not flick_sequence_left.active and not flick_sequence_right.active and abs(aim_error) < 0.02 and abs(math.hypot(goalpos[0],goalpos[1])) > 100 and has_ball_time - time.time() > 0.2:  #TUNE: 0.02rad angle, 100 distance far
                     flick_sequence_left.start() if goalpos[0] > 0 else flick_sequence_right.start()
                 else:
                     motors.motorspeed5 = dribblerspd
 
             elif botstate == 2: # go for ball
+                has_ball_time = time.time()
                 if ballpos[1] < 0 and goalpos[1] < 200 and ball_distance > 220 and goalie_bot_state == 1: #tell goalie to get ball
                     raw_substate = 1
                 elif (ballpos[1] < 60 and (substate == 1 or substate == 4)) or ballpos[1] < 80:
@@ -930,6 +934,7 @@ def main():
                 motors.motorspeed5 = 0
 
             elif botstate == 3:
+                has_ball_time = time.time()
                 comms.my_state.update({"command": 1})
                 desired_heading = 0
                 if own_goalpos != [0,-200]: #align middle and go backwards
