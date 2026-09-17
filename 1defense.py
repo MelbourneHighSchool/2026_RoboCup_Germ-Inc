@@ -634,6 +634,7 @@ def main():
         pcb.set_brightness(led_brightness)
 
         heading_offset = imu.heading #calibrate heading
+        has_ball_time= time.time()
         time.sleep(0.01)
 
     print("running")
@@ -717,6 +718,7 @@ def main():
                 pcb.set_brightness(led_brightness)
 
                 heading_offset = imu.heading #calibrate imu heading
+                has_ball_time = time.time()
 
                 time.sleep(0.02)
                 continue
@@ -833,14 +835,16 @@ def main():
                 substate1 = substate1_hyst.update(raw_substate1)
 
                 if substate1 == 1:
-                    motors.motorspeed5 = dribblerspd
+                    motors.motorspeed5 = dribblerspd if abs(math.hypot(goalpos[0],goalpos[1])) > 120 else -dribblerspd
                     desired_heading = 0
-                    desired_pos = goalpos
+                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else ballpos
                 elif substate1 == 2:
+                    has_ball_time = time.time()
                     motors.motorspeed5 = 0
                     desired_heading = 0
                     desired_pos = ballpos
                 elif substate1 == 3:
+                    has_ball_time = time.time()
                     motors.motorspeed5 = 0
                     desired_heading = 0
                     if abs(ballpos[0]) < 60:
@@ -848,12 +852,13 @@ def main():
                     else:
                         desired_pos = [0, -200]
                 elif substate1 == 4:
+                    has_ball_time = time.time()
                     motors.motorspeed5 = 0
                     desired_heading = 0
                     desired_pos = [ballpos[0],ballpos[1] - 50]
 
             elif botstate == 2: # go for ball then pass
-                if (ball_distance < 120 and ballpos[1] > 0 and abs(ballpos[0]) < 40 and ir_snapshot[0].get("distance") > 2) or ir_snapshot[0].get("distance") == 4 or (ballpos[1] < 160 and substate2 == 1):
+                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and ((ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3) or (ir_snapshot[3].get("detected") == 0 or ir_snapshot[9].get("detected") == 0))):
                     raw_substate2 = 1  # ball in bcz
                 elif (ballpos[1] < 60 and (substate2 == 1 or substate2 == 4)) or ballpos[1] < 80:
                     raw_substate2 = 2 if ball_distance > 200 else 3  # far vs near backup
@@ -862,14 +867,16 @@ def main():
                 substate2 = substate2_hyst.update(raw_substate2)
 
                 if substate2 == 1:
-                    motors.motorspeed5 = dribblerspd
+                    motors.motorspeed5 = dribblerspd if abs(math.hypot(goalpos[0],goalpos[1])) > 120 else -dribblerspd
                     desired_heading = 0
-                    desired_pos = goalpos
+                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else ballpos
                 elif substate2 == 2:
+                    has_ball_time = time.time()
                     motors.motorspeed5 = 0
                     desired_heading = 0
                     desired_pos = [0, -200]
                 elif substate2 == 3:
+                    has_ball_time = time.time()
                     motors.motorspeed5 = 0
                     desired_heading = 0
                     if abs(ballpos[0]) < 60:
@@ -877,6 +884,7 @@ def main():
                     else:
                         desired_pos = [0, -200]
                 elif substate2 == 4:
+                    has_ball_time = time.time()
                     motors.motorspeed5 = 0
 
                     A = np.array([goalpos[0], goalpos[1]])
