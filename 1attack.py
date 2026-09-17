@@ -210,7 +210,7 @@ class PCBThread(threading.Thread):
 
         return [
             {
-                'detected': data[i * 2] if data[i * 2 + 1] != 0 else 0,
+                'detected': data[i * 2] if data[i * 2 + 1] >= 2 else 0,
                 'distance': data[i * 2 + 1]
             }
             for i in range(12)
@@ -677,6 +677,7 @@ def main():
     substate_hyst = Hysteresis(hold_time=0.05, instant_enter=lambda v: v == 1)
     botstate = 2
     substate = 4
+    has_ball_time = time.time()
 
     CONTROL_PERIOD = 0.01
 
@@ -889,10 +890,10 @@ def main():
                 comms.my_state.update({"command": 0})
                 desired_heading = math.atan2(goalpos[1],goalpos[0]) - math.pi/2
                 desired_heading = (desired_heading + math.pi) % (2 * math.pi) - math.pi
-                desired_pos = goalpos if has_ball_time - time.time() > 0.2 else ballpos
+                desired_pos = goalpos if time.time() - has_ball_time > 0.2 else ballpos
 
                 aim_error = (desired_heading - compass + math.pi) % (2*math.pi) - math.pi
-                if not flick_sequence_left.active and not flick_sequence_right.active and abs(aim_error) < 0.02 and abs(math.hypot(goalpos[0],goalpos[1])) > 100 and has_ball_time - time.time() > 0.2:  #TUNE: 0.02rad angle, 100 distance far
+                if not flick_sequence_left.active and not flick_sequence_right.active and abs(aim_error) < 0.02 and abs(math.hypot(goalpos[0],goalpos[1])) > 100 and time.time() - has_ball_time > 0.2:  #TUNE: 0.02rad angle, 100 distance far
                     flick_sequence_left.start() if goalpos[0] > 0 else flick_sequence_right.start()
                 else:
                     motors.motorspeed5 = dribblerspd

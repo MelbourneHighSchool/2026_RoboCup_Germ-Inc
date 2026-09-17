@@ -612,6 +612,7 @@ def main():
     botstate = 3
     substate1 = 4
     substate2 = 4
+    has_ball_time = time.time()
 
     CONTROL_PERIOD = 0.01
 
