@@ -697,6 +697,7 @@ def main():
         elif max(colours_snapshot) < line_threshold:
             led_brightness -= 50
         led_brightness = max(min(led_brightness,65535),0)
+        led_brightness = 40000
         pcb.set_brightness(led_brightness)
 
         heading_offset = imu.heading #calibrate heading
@@ -785,6 +786,7 @@ def main():
                 elif max(colours_snapshot) < line_threshold:
                     led_brightness -= 50
                 led_brightness = max(min(led_brightness,65535),0)
+                led_brightness = 40000
                 pcb.set_brightness(led_brightness)
 
                 heading_offset = imu.heading
@@ -890,7 +892,7 @@ def main():
                 comms.my_state.update({"command": 0})
                 desired_heading = math.atan2(goalpos[1],goalpos[0]) - math.pi/2
                 desired_heading = (desired_heading + math.pi) % (2 * math.pi) - math.pi
-                desired_pos = goalpos if time.time() - has_ball_time > 0.2 else ballpos
+                desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 50]
 
                 aim_error = (desired_heading - compass + math.pi) % (2*math.pi) - math.pi
                 if not flick_sequence_left.active and not flick_sequence_right.active and abs(aim_error) < 0.02 and abs(math.hypot(goalpos[0],goalpos[1])) > 100 and time.time() - has_ball_time > 0.2:  #TUNE: 0.02rad angle, 100 distance far
