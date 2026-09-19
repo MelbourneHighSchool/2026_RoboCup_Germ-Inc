@@ -632,6 +632,7 @@ def main():
         elif max(colours_snapshot) < line_threshold:
             led_brightness -= 50
         led_brightness = max(min(led_brightness,65535),0)
+        led_brightness = 40000
         pcb.set_brightness(led_brightness)
 
         heading_offset = imu.heading #calibrate heading
@@ -716,6 +717,7 @@ def main():
                 elif max(colours_snapshot) < line_threshold:
                     led_brightness -= 50
                 led_brightness = max(min(led_brightness,65535),0)
+                led_brightness = 40000
                 pcb.set_brightness(led_brightness)
 
                 heading_offset = imu.heading #calibrate imu heading
@@ -838,7 +840,7 @@ def main():
                 if substate1 == 1:
                     motors.motorspeed5 = dribblerspd if abs(math.hypot(goalpos[0],goalpos[1])) > 120 else -dribblerspd
                     desired_heading = 0
-                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else ballpos
+                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 30]
                 elif substate1 == 2:
                     has_ball_time = time.time()
                     motors.motorspeed5 = 0
@@ -870,7 +872,7 @@ def main():
                 if substate2 == 1:
                     motors.motorspeed5 = dribblerspd if abs(math.hypot(goalpos[0],goalpos[1])) > 120 else -dribblerspd
                     desired_heading = 0
-                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else ballpos
+                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 30]
                 elif substate2 == 2:
                     has_ball_time = time.time()
                     motors.motorspeed5 = 0
