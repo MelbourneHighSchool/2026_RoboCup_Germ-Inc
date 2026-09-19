@@ -827,7 +827,7 @@ def main():
                 motors.motorspeed5 = 0
 
             elif botstate == 1: #go for ball then score
-                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and ((ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3) or (ir_snapshot[3].get("detected") == 0 or ir_snapshot[9].get("detected") == 0))):
+                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
                     raw_substate1 = 1  #ball in bcz
                 elif (ballpos[1] < 60 and (substate1 == 1 or substate1 == 4)) or ballpos[1] < 80:
                     raw_substate1 = 2 if ball_distance > 200 else 3
@@ -859,7 +859,7 @@ def main():
                     desired_pos = [ballpos[0],ballpos[1] - 50]
 
             elif botstate == 2: # go for ball then pass
-                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and ((ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3) or (ir_snapshot[3].get("detected") == 0 or ir_snapshot[9].get("detected") == 0))):
+                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
                     raw_substate2 = 1  # ball in bcz
                 elif (ballpos[1] < 60 and (substate2 == 1 or substate2 == 4)) or ballpos[1] < 80:
                     raw_substate2 = 2 if ball_distance > 200 else 3  # far vs near backup
