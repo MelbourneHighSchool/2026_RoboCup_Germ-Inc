@@ -526,8 +526,8 @@ class GoalTracker: #camera to goal position
         if self.lostowngoalcount > self.lost_limit:
             self.own_goalx_list.clear(); self.own_goaly_list.clear()
 
-        goalpos = [np.mean(self.goalx_list), np.mean(self.goaly_list)] if self.goalx_list else [0, 200]
-        own_goalpos = [np.mean(self.own_goalx_list), np.mean(self.own_goaly_list)] if self.own_goalx_list else [0, -200]
+        goalpos = [np.mean(self.goalx_list), np.mean(self.goaly_list)] if self.goalx_list else [0, 250]
+        own_goalpos = [np.mean(self.own_goalx_list), np.mean(self.own_goaly_list)] if self.own_goalx_list else [0, -250]
         return goalpos, own_goalpos
 
 def VelocityToMotor(xvel, yvel, rot, maxspd):
@@ -661,8 +661,8 @@ def main():
     irdirection = 0
     unconcordantdirection = 0
 
-    goalpos = [0,200] #cartesian plane coord relative of bot
-    own_goalpos = [0,-200] #cartesian plane coord relative of bot
+    goalpos = [0,250] #cartesian plane coord relative of bot
+    own_goalpos = [0,-250] #cartesian plane coord relative of bot
     goal_colour = 0 #0 shoot for yellow, 1 shoot for blue
 
     ball_distance = 0
@@ -872,7 +872,7 @@ def main():
 #----------------------------------------------------------------------
             if ballpos == [0,0] and ir == [0,0]: #doesnt see ball
                 raw_botstate = 0 if goalie_bot_state == 1 else 3
-            elif ir_snapshot[0].get("distance") == 3 or (botstate == 1 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)): # ball in ball capture zone
+            elif ir_snapshot[0].get("distance") == 3 or (botstate == 1 and abs(ballpos[0]) < 80 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)): # ball in ball capture zone
                 raw_botstate = 1 #try to shoot
             else:
                 raw_botstate = 2 #try to get possession of ball
@@ -893,7 +893,7 @@ def main():
                 comms.my_state.update({"command": 0})
                 desired_heading = math.atan2(goalpos[1],goalpos[0]) - math.pi/2
                 desired_heading = (desired_heading + math.pi) % (2 * math.pi) - math.pi
-                desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 50]
+                desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 70]
 
                 aim_error = (desired_heading - compass + math.pi) % (2*math.pi) - math.pi
                 if not flick_sequence_left.active and not flick_sequence_right.active and abs(aim_error) < 0.02 and abs(math.hypot(goalpos[0],goalpos[1])) > 100 and time.time() - has_ball_time > 0.2:  #TUNE: 0.02rad angle, 100 distance far
@@ -941,13 +941,17 @@ def main():
                 has_ball_time = time.time()
                 comms.my_state.update({"command": 1})
                 desired_heading = 0
-                if own_goalpos != [0,-200]: #align middle and go backwards
+                if own_goalpos != [0,-250]: #align middle and go backwards
                     desired_pos = [own_goalpos[0], own_goalpos[1] + 100]
                     ingoalspd = 10000000
                 else:
                     desired_pos = [goalpos[0], -200]
                     ingoalspd = basespd
                 motors.motorspeed5 = 0
+
+            #DEBUG
+            print(f"botstate={botstate}  on line={on_line}")
+            print(f"goalpos={goalpos}  own goalpos={own_goalpos}  ballpos={ballpos}")
 
 #----------------------------------------------------------------------
 #            translate all variables into motor movement

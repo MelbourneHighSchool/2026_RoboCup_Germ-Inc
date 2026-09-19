@@ -483,8 +483,8 @@ class GoalTracker: #camera to goal position
         if self.lostowngoalcount > self.lost_limit:
             self.own_goalx_list.clear(); self.own_goaly_list.clear()
 
-        goalpos = [np.mean(self.goalx_list), np.mean(self.goaly_list)] if self.goalx_list else [0, 200]
-        own_goalpos = [np.mean(self.own_goalx_list), np.mean(self.own_goaly_list)] if self.own_goalx_list else [0, -200]
+        goalpos = [np.mean(self.goalx_list), np.mean(self.goaly_list)] if self.goalx_list else [0, 250]
+        own_goalpos = [np.mean(self.own_goalx_list), np.mean(self.own_goaly_list)] if self.own_goalx_list else [0, -250]
         return goalpos, own_goalpos
 
 def VelocityToMotor(xvel, yvel, rot, maxspd): #convert variables into specific motor speed values
@@ -594,8 +594,8 @@ def main():
     irdirection = 0
     unconcordantdirection = 0
 
-    goalpos = [0,200] # cartesian plane coord relative of bot
-    own_goalpos = [0,-200] # cartesian plane coord relative of bot
+    goalpos = [0,250] # cartesian plane coord relative of bot
+    own_goalpos = [0,-250] # cartesian plane coord relative of bot
     goal_colour = 0 # 0 shoot for yellow, 1 shoot for blue
 
     ball_distance = 0
@@ -808,7 +808,7 @@ def main():
                 raw_botstate = 0
             elif attack_bot_state == 0 or attack_bot_state is None: #attack bot is off
                 raw_botstate = 1
-            elif comms_command == 1 or (ball_distance < 220 and own_goalpos != [0,-200]): #signal from other bot to go get ball
+            elif comms_command == 1 or (ball_distance < 220 and own_goalpos != [0,-250]): #signal from other bot to go get ball
                 raw_botstate = 2
             else: #chill in goals
                 raw_botstate = 3
@@ -820,7 +820,7 @@ def main():
 #----------------------------------------------------------------------
             if botstate == 0: #do not see ball
                 desired_heading = 0
-                if own_goalpos != [0,-200]: # align middle and go backwards
+                if own_goalpos != [0,-250]: # align middle and go backwards
                     desired_pos = [own_goalpos[0], own_goalpos[1] + 100]
                     ingoalspd = 10000000
                 else:
@@ -829,7 +829,7 @@ def main():
                 motors.motorspeed5 = 0
 
             elif botstate == 1: #go for ball then score
-                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
+                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and abs(ballpos[0]) < 80 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
                     raw_substate1 = 1  #ball in bcz
                 elif (ballpos[1] < 60 and (substate1 == 1 or substate1 == 4)) or ballpos[1] < 80:
                     raw_substate1 = 2 if ball_distance > 200 else 3
@@ -840,7 +840,7 @@ def main():
                 if substate1 == 1:
                     motors.motorspeed5 = dribblerspd if abs(math.hypot(goalpos[0],goalpos[1])) > 120 else -dribblerspd
                     desired_heading = 0
-                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 30]
+                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 70]
                 elif substate1 == 2:
                     has_ball_time = time.time()
                     motors.motorspeed5 = 0
@@ -858,10 +858,10 @@ def main():
                     has_ball_time = time.time()
                     motors.motorspeed5 = 0
                     desired_heading = 0
-                    desired_pos = [ballpos[0],ballpos[1] - 50]
+                    desired_pos = [ballpos[0],ballpos[1] - 70] if ballpos[1] > 100 else [ballpos[0], 0]
 
             elif botstate == 2: # go for ball then pass
-                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
+                if ir_snapshot[0].get("distance") == 3 or (substate1 == 1 and abs(ballpos[0]) < 80 and (ir_snapshot[0].get("distance") == 3 or ir_snapshot[1].get("distance") == 3 or ir_snapshot[11].get("distance") == 3)):
                     raw_substate2 = 1  # ball in bcz
                 elif (ballpos[1] < 60 and (substate2 == 1 or substate2 == 4)) or ballpos[1] < 80:
                     raw_substate2 = 2 if ball_distance > 200 else 3  # far vs near backup
@@ -872,7 +872,7 @@ def main():
                 if substate2 == 1:
                     motors.motorspeed5 = dribblerspd if abs(math.hypot(goalpos[0],goalpos[1])) > 120 else -dribblerspd
                     desired_heading = 0
-                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 30]
+                    desired_pos = goalpos if time.time() - has_ball_time > 0.2 else [ballpos[0], ballpos[1] - 70]
                 elif substate2 == 2:
                     has_ball_time = time.time()
                     motors.motorspeed5 = 0
@@ -903,7 +903,7 @@ def main():
 
             elif botstate == 3: #chill in goals
                 desired_heading = 0
-                if own_goalpos != [0,-200]: # align middle and go backwards
+                if own_goalpos != [0,-250]: # align middle and go backwards
                     desired_pos = [own_goalpos[0], own_goalpos[1] + 100]
                     ingoalspd = 10000000
                 else:
